@@ -1,0 +1,68 @@
+colorspaces <- c("RGB", "HSB", "Lab")
+RGB <- c("Red", "Green", "Blue")
+HSB <- c("Hue", "Saturation", "Lightness")
+variableList <- c("RDR", "Drupelet Count", "Size")
+options(shiny.maxRequestSize = 30*1024^2)
+ui <- shiny::fluidPage(
+  theme = bslib::bs_theme(bootswatch = "darkly"),
+  shiny::titlePanel(
+    shiny::h1("ShinyFruit Imaging Lab", align = "center")
+  ),
+  shiny::fluidRow(
+    shiny::column(4,
+                  shiny::plotOutput("image", click = shiny::clickOpts("img_click", F),
+                                                        brush = shiny::brushOpts("img_crop", clip = F, resetOnNew = F),
+                                                        height = "100%", width = "100%"),
+                  shiny::conditionalPanel(condition = "input.variables.includes('RDR')",
+                                          shinycssloaders::withSpinner(shiny::plotOutput("cs_hist")))),
+    shiny::column(4,
+                  shiny::h3("Control Panel"),
+                  shiny::h4("Step 1: Apply Size Reference"),
+                  shiny::fileInput(inputId = "sample_img",
+                                   label= "Select Image",
+                                   multiple =T,
+                                   placeholder = NULL),
+                  shiny::conditionalPanel(condition = "output.fileUploaded",
+                                          shinyWidgets::prettySwitch("standard", "Size Reference")),
+                  shiny::conditionalPanel(condition = "input.standard > 0 && input.submitsize < 1",
+                                          shiny::h4("Locate size reference."),
+                                          shiny::fluidRow(shiny::column(8, shiny::verbatimTextOutput("line_len", placeholder = T)),
+                                                          shiny::column(4, shiny::actionButton("clearclick", "Reset"))),
+                                          shiny::fluidRow(shiny::column(5, shiny::textInput("known_len", NULL, placeholder = "Known?")),
+                                                          shiny::column(3, shinyWidgets::pickerInput("units", NULL, c("mm", "cm", "inches"))),
+                                                          shiny::column(4, shiny::actionButton("submitsize", "Submit")))),
+                  shiny::conditionalPanel(condition = "input.submitsize > 0 && input.submitcrop < 1",
+                                          shiny::h4("Crop out size reference"),
+                                          shiny::fluidRow(shiny::column(3, shiny::actionButton("clearcrop", "Reset")),
+                                                          shiny::column(3, shiny::actionButton("submitcrop", "Proceed to Step 2")))),
+                  shiny::conditionalPanel(condition = "input.submitcrop",
+                                          shiny::h4("Step 2: Customize Analysis"),
+                                          shiny::checkboxGroupInput(inputId = "variables",
+                                                                    label = "Select Variables",
+                                                                    choices = variableList)),
+                  shiny::conditionalPanel(condition = "input.variables.includes('RDR')",
+                                          shiny::selectInput(inputId = "col_space",
+                                                             label = "Select Colorspace",
+                                                             choices = colorspaces),
+                                          shiny::sliderInput(inputId = "channel1",
+                                                             label = "Red",
+                                                             min = 0, max = 1, value = c(0, 1)),
+                                          shiny::sliderInput(inputId = "channel2",
+                                                             label = "Blue",
+                                                             min = 0, max = 1, value = c(0, 1)),
+                                          shiny::sliderInput(inputId = "channel3",
+                                                             label = "Green",
+                                                             min = 0, max = 1, value = c(0, 1)),
+                                          shiny::checkboxInput("despeckle", "Despeckle?", value = T)),
+                  shiny::conditionalPanel(condition = "input.submitcrop",
+                                          shiny::actionButton("step3", "Proceed to Step 3")),
+                  shiny::conditionalPanel(condition = "input.step3",
+                                          shiny::fluidRow(shiny::column(6, shiny::actionButton("folderbutton", "Choose Input Directory")),
+                                                          shiny::column(6, shinyWidgets::prettySwitch("imgbat", "Include Images in Output"))),
+                                          shiny::fluidRow(shiny::column(6, shiny::verbatimTextOutput("foldertxt", T)),
+                                                          shiny::column(6, shiny::actionButton(inputId = "runbutton", label = "Run Batch")))),
+                  shiny::verbatimTextOutput("txtout"),
+                  shiny::tableOutput("testing"),
+                  offset = 4)
+  )
+)
