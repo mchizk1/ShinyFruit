@@ -19,11 +19,12 @@ server <- function(input, output, session){
     image1 <- bkb_process(input$sample_img$datapath)
     return(image1)})
   cs_cimg <- shiny::reactive({switchspace(img_na(), input$col_space)})
+  cs_bkg  <- shiny::reactive({switchspace(image1(), input$col_space_bkg)})
   shiny::observeEvent(input$sample_img, {
     output$image <- shiny::renderPlot(
       {image1() %>%
           plot()},
-      width = 900, height = 600
+      width = 800, height = 533
     )
   })
 
@@ -67,7 +68,7 @@ server <- function(input, output, session){
     crop(NULL)
   })
 
-  #This observer plots a distribution of colors for the selected colorspace
+  #This observer plots a distribution of colors for the RDR sliders
   cs <- shiny::reactive({
     list(input$col_space, input$variables)
   })
@@ -98,6 +99,39 @@ server <- function(input, output, session){
         hist(imager::G(cs_cimg()), col=rgb(0,1,0,0.5),
              xlab = NULL, ylab = NULL, main = NULL, nclass = 50)
         hist(imager::B(cs_cimg()), col=rgb(0,0,1,0.5),
+             xlab = NULL, ylab = NULL, main = NULL, nclass = 50)
+      }, width = 600)
+    }
+  }, ignoreInit = T)
+
+  #This observer plots a distribution of colors for the background sliders
+
+  shiny::observeEvent(list(input$col_space_bkg, input$sample_img), {
+    if(!is.null(input$sample_img)){
+      labs <- BlackMagick::cs_labs[,colnames(BlackMagick::cs_labs) == input$col_space_bkg]
+      shiny::updateSliderInput(session, inputId = "channel1_bkg", label = labs[1],
+                               min = floor(min(imager::R(cs_bkg()), na.rm = T)),
+                               max = ceiling(max(imager::R(cs_bkg()), na.rm = T)),
+                               value = c(floor(min(imager::R(cs_bkg()), na.rm = T)),
+                                         ceiling(max(imager::R(cs_bkg()), na.rm = T))))
+      shiny::updateSliderInput(session, inputId = "channel2_bkg", label = labs[2],
+                               min = floor(min(imager::G(cs_bkg()), na.rm = T)),
+                               max = ceiling(max(imager::G(cs_bkg()), na.rm = T)),
+                               value = c(floor(min(imager::G(cs_bkg()), na.rm = T)),
+                                         ceiling(max(imager::G(cs_bkg()), na.rm = T))))
+      shiny::updateSliderInput(session, inputId = "channel3_bkg", label = labs[3],
+                               min = floor(min(imager::B(cs_bkg()), na.rm = T)),
+                               max = ceiling(max(imager::B(cs_bkg()), na.rm = T)),
+                               value = c(floor(min(imager::B(cs_bkg()), na.rm = T)),
+                                         ceiling(max(imager::B(cs_bkg()), na.rm = T))))
+      output$cs_hist <- shiny::renderPlot({
+        layout(matrix(c(1,2,3), 3, 1, byrow = TRUE))
+        par(mar = c(10, 0, 0, 0))
+        hist(imager::R(cs_bkg()), col=rgb(1,0,0,0.5),
+             xlab = NULL, ylab = NULL, main = NULL, nclass = 50)
+        hist(imager::G(cs_bkg()), col=rgb(0,1,0,0.5),
+             xlab = NULL, ylab = NULL, main = NULL, nclass = 50)
+        hist(imager::B(cs_bkg()), col=rgb(0,0,1,0.5),
              xlab = NULL, ylab = NULL, main = NULL, nclass = 50)
       }, width = 600)
     }
@@ -154,12 +188,13 @@ server <- function(input, output, session){
   })
 
   step1 <- shiny::reactive({
-    list(input$img_click, input$clearclick, input$img_crop, input$clearcrop)
+    list(input$img_click, input$clearclick, input$img_crop, input$clearcrop,
+         input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
   })
 
   shiny::observeEvent(step1(), {
     if(input$submitcrop < 1){
-      image_mask <- image1()
+      image_mask <- bkb_background(image1(), c(0,0,0,0), F, input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
       if(!is.null(click1())){
         image_mask <- imager::draw_circle(image_mask, click1()[1], click1()[2], 5, "red")
       }
@@ -180,12 +215,12 @@ server <- function(input, output, session){
 
   img_step2 <- shiny::eventReactive(input$submitcrop, {
     if(is.numeric(crop())){
-      bkb_background(image1(), crop(), F)
+      bkb_background(image1(), crop(), F, input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
     }
   })
   img_na <- shiny::eventReactive(input$submitcrop, {
     if(is.numeric(crop())){
-      bkb_background(image1(), crop(), T)
+      bkb_background(image1(), crop(), T, input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
     }
   })
   shiny::observeEvent(img_step2(), {
@@ -227,6 +262,7 @@ server <- function(input, output, session){
     output$foldertxt <- shiny::renderText({getwd()})
   })
   observeEvent(input$runbutton, {
+    bkg <- list(input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
     indir <- getwd()
     drp <- ("Drupelet Count" %in% input$variables)
     ber <- ("Size" %in% input$variables)
@@ -241,7 +277,7 @@ server <- function(input, output, session){
       batch_crop <- c(0,0,0,0)
     }
     shiny::withProgress(message = "Analyzing Images",{
-      RunBatch(indir, input$imgbat, drp, ber, rdr, sz_conv(), batch_crop)
+      RunBatch(indir, input$imgbat, drp, ber, rdr, sz_conv(), batch_crop, bkg)
     })
   })
   output$testing <- renderTable(SzOut())

@@ -39,8 +39,8 @@ bkb_process <- function(img){
 #   return(img_out)
 # }
 
-bkb_background <- function(img, crop, setNA){
-  px <- RedDrupe(switchspace(img, "Lab"), c(40, 100), c(-54, 10), c(0, 25), T)
+bkb_background <- function(img, crop, setNA, cs="RGB", c1, c2, c3){
+  px <- RedDrupe(switchspace(img, cs), c1, c2, c3, T)
   img_out <- imager::colorise(img, px, c(0,0,1)) %>%
     imager::draw_rect(crop[1], crop[3], crop[2], crop[4], color = c(0, 0, 1))
   if(setNA == T){
@@ -104,9 +104,9 @@ DrpSummary <- function(background_cimg){
 
 # Applies a three-channel color threshold in an arbitrary colorspace
 RedDrupe <- function(cs_cimg, channel1, channel2, channel3, despeckle=F){
-  RDR_px <- (imager::R(cs_cimg) >= channel1[1] & imager::R(cs_cimg) <= channel1[2] &
-    imager::G(cs_cimg) >= channel2[1] & imager::G(cs_cimg) <= channel2[2] &
-    imager::B(cs_cimg) >= channel3[1] & imager::B(cs_cimg) <= channel3[2])
+  RDR_px <- (imager::R(cs_cimg) <= channel1[1] | imager::R(cs_cimg) >= channel1[2] |
+    imager::G(cs_cimg) <= channel2[1] | imager::G(cs_cimg) >= channel2[2] |
+    imager::B(cs_cimg) <= channel3[1] | imager::B(cs_cimg) >= channel3[2])
   if(despeckle){
     RDR_px <- imager::clean(RDR_px, 10) & (!imager::px.na(RDR_px))
     RDR_px <- imager::fill(RDR_px, 20) & (!imager::px.na(RDR_px))

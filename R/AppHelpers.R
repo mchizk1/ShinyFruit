@@ -21,7 +21,7 @@ pythag <- function(click1, click2){
 # Runs image analysis over a batch of images applying current settings
 RunBatch <- function(indir, include_img=F,
                      drp=F, ber=F, rdr=NULL, convert=1,
-                     crop=c(0,0,0,0)){
+                     crop=c(0,0,0,0), bkg){
   imgs <- list.files(path = indir, full.names = T)
   outdir <- paste0(indir, "/BlackMagick_Out")
   if(!dir.exists(outdir)){
@@ -32,7 +32,7 @@ RunBatch <- function(indir, include_img=F,
     Out_vec <- data.frame(file = stringr::str_extract(i, "(?<=/)([^/]*)$"))
     # Set up image needed for analysis
     img_out <- bkb_process(i) %>%
-      bkb_background(crop=crop, setNA=T)
+      bkb_background(crop=crop, setNA=T, bkg[[1]], bkg[[2]], bkg[[3]], bkg[[4]])
     # Get data for spreadsheet output
     if(ber){
       ber_df <- BerSummary(img_out)
