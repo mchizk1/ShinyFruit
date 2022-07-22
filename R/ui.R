@@ -76,7 +76,6 @@ ui <- shiny::fluidPage(
                                           shiny::fluidRow(shiny::column(6, shiny::verbatimTextOutput("foldertxt", T)),
                                                           shiny::column(6, shiny::actionButton(inputId = "runbutton", label = "Run Batch")))),
                   shiny::verbatimTextOutput("txtout"),
-                  shiny::tableOutput("testing"),
                   offset = 4)
   )
 )

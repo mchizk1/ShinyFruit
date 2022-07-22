@@ -23,7 +23,7 @@ RunBatch <- function(indir, include_img=F,
                      drp=F, ber=F, rdr=NULL, convert=1,
                      crop=c(0,0,0,0), bkg){
   imgs <- list.files(path = indir, full.names = T)
-  outdir <- paste0(indir, "/BlackMagick_Out")
+  outdir <- paste0(indir, "/ShinyFruit_Out")
   if(!dir.exists(outdir)){
     dir.create(outdir)
   }
