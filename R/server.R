@@ -75,7 +75,7 @@ server <- function(input, output, session){
 
   shiny::observeEvent(cs(), {
     if("RDR" %in% input$variables){
-      labs <- cs_labs[,colnames(cs_labs) == input$col_space]
+      labs <- ShinyFruit::cs_labs[,colnames(ShinyFruit::cs_labs) == input$col_space]
       shiny::updateSliderInput(session, inputId = "channel1", label = labs[1],
                                min = floor(min(imager::R(cs_cimg()), na.rm = T)),
                                max = ceiling(max(imager::R(cs_cimg()), na.rm = T)),
@@ -108,7 +108,7 @@ server <- function(input, output, session){
 
   shiny::observeEvent(list(input$col_space_bkg, input$sample_img), {
     if(!is.null(input$sample_img)){
-      labs <- cs_labs[,colnames(cs_labs) == input$col_space_bkg]
+      labs <- ShinyFruit::cs_labs[,colnames(ShinyFruit::cs_labs) == input$col_space_bkg]
       shiny::updateSliderInput(session, inputId = "channel1_bkg", label = labs[1],
                                min = floor(min(imager::R(cs_bkg()), na.rm = T)),
                                max = ceiling(max(imager::R(cs_bkg()), na.rm = T)),
