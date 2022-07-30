@@ -77,20 +77,20 @@ server <- function(input, output, session){
     if("RDR" %in% input$variables){
       labs <- ShinyFruit::cs_labs[,colnames(ShinyFruit::cs_labs) == input$col_space]
       shiny::updateSliderInput(session, inputId = "channel1", label = labs[1],
-                               min = floor(min(imager::R(cs_cimg()), na.rm = T)),
-                               max = ceiling(max(imager::R(cs_cimg()), na.rm = T)),
-                               value = c(floor(min(imager::R(cs_cimg()), na.rm = T)),
-                                         ceiling(max(imager::R(cs_cimg()), na.rm = T))))
+                               min = floor(min(imager::R(cs_cimg()), na.rm = T))-0.001,
+                               max = ceiling(max(imager::R(cs_cimg()), na.rm = T))+0.001,
+                               value = c(floor(min(imager::R(cs_cimg()), na.rm = T))-0.001,
+                                         ceiling(max(imager::R(cs_cimg()), na.rm = T))+0.001))
       shiny::updateSliderInput(session, inputId = "channel2", label = labs[2],
-                               min = floor(min(imager::G(cs_cimg()), na.rm = T)),
-                               max = ceiling(max(imager::G(cs_cimg()), na.rm = T)),
-                               value = c(floor(min(imager::G(cs_cimg()), na.rm = T)),
-                                         ceiling(max(imager::G(cs_cimg()), na.rm = T))))
+                               min = floor(min(imager::G(cs_cimg()), na.rm = T))-0.001,
+                               max = ceiling(max(imager::G(cs_cimg()), na.rm = T))+0.001,
+                               value = c(floor(min(imager::G(cs_cimg()), na.rm = T))-0.001,
+                                         ceiling(max(imager::G(cs_cimg()), na.rm = T))+0.001))
       shiny::updateSliderInput(session, inputId = "channel3", label = labs[3],
-                               min = floor(min(imager::B(cs_cimg()), na.rm = T)),
-                               max = ceiling(max(imager::B(cs_cimg()), na.rm = T)),
-                               value = c(floor(min(imager::B(cs_cimg()), na.rm = T)),
-                                         ceiling(max(imager::B(cs_cimg()), na.rm = T))))
+                               min = floor(min(imager::B(cs_cimg()), na.rm = T))-0.001,
+                               max = ceiling(max(imager::B(cs_cimg()), na.rm = T))+0.001,
+                               value = c(floor(min(imager::B(cs_cimg()), na.rm = T))-0.001,
+                                         ceiling(max(imager::B(cs_cimg()), na.rm = T))+0.001))
       output$cs_hist <- shiny::renderPlot({
         layout(matrix(c(1,2,3), 3, 1, byrow = TRUE))
         par(mar = c(10, 0, 0, 0))
@@ -110,20 +110,20 @@ server <- function(input, output, session){
     if(!is.null(input$sample_img)){
       labs <- ShinyFruit::cs_labs[,colnames(ShinyFruit::cs_labs) == input$col_space_bkg]
       shiny::updateSliderInput(session, inputId = "channel1_bkg", label = labs[1],
-                               min = floor(min(imager::R(cs_bkg()), na.rm = T)),
-                               max = ceiling(max(imager::R(cs_bkg()), na.rm = T)),
-                               value = c(floor(min(imager::R(cs_bkg()), na.rm = T)),
-                                         ceiling(max(imager::R(cs_bkg()), na.rm = T))))
+                               min = floor(min(imager::R(cs_bkg()), na.rm = T))-0.001,
+                               max = ceiling(max(imager::R(cs_bkg()), na.rm = T))+0.001,
+                               value = c(floor(min(imager::R(cs_bkg()), na.rm = T))-0.001,
+                                         ceiling(max(imager::R(cs_bkg()), na.rm = T))+0.001))
       shiny::updateSliderInput(session, inputId = "channel2_bkg", label = labs[2],
-                               min = floor(min(imager::G(cs_bkg()), na.rm = T)),
-                               max = ceiling(max(imager::G(cs_bkg()), na.rm = T)),
-                               value = c(floor(min(imager::G(cs_bkg()), na.rm = T)),
-                                         ceiling(max(imager::G(cs_bkg()), na.rm = T))))
+                               min = floor(min(imager::G(cs_bkg()), na.rm = T))-0.001,
+                               max = ceiling(max(imager::G(cs_bkg()), na.rm = T))+0.001,
+                               value = c(floor(min(imager::G(cs_bkg()), na.rm = T))-0.001,
+                                         ceiling(max(imager::G(cs_bkg()), na.rm = T))+0.001))
       shiny::updateSliderInput(session, inputId = "channel3_bkg", label = labs[3],
-                               min = floor(min(imager::B(cs_bkg()), na.rm = T)),
-                               max = ceiling(max(imager::B(cs_bkg()), na.rm = T)),
-                               value = c(floor(min(imager::B(cs_bkg()), na.rm = T)),
-                                         ceiling(max(imager::B(cs_bkg()), na.rm = T))))
+                               min = floor(min(imager::B(cs_bkg()), na.rm = T))-0.001,
+                               max = ceiling(max(imager::B(cs_bkg()), na.rm = T))+0.001,
+                               value = c(floor(min(imager::B(cs_bkg()), na.rm = T))-0.001,
+                                         ceiling(max(imager::B(cs_bkg()), na.rm = T))+0.001))
       output$cs_hist <- shiny::renderPlot({
         layout(matrix(c(1,2,3), 3, 1, byrow = TRUE))
         par(mar = c(10, 0, 0, 0))
