@@ -31,7 +31,7 @@ server <- function(input, output, session){
   click <- reactiveVal(0)
   click1 <- reactiveVal(NULL)
   click2 <- reactiveVal(NULL)
-  crop <- reactiveVal(NULL)
+  crop <- reactiveVal(c(0,0,0,0))
   sz_conv <- reactiveVal(1)
   line_len <- reactiveVal(NULL)
   output$line_len <- renderText({"Measured Length? (pixels)"})
