@@ -2,14 +2,23 @@
 bkb_process <- function(img){
   for(i in img){
     filename <- paste0(stringr::str_extract(i, "(?<=/)IMG(.*)(?=\\.JPG$)"),".jpg")
-    img_out <- magick::image_read(i) %>%
-      magick::image_resize("1500x1000") %>%
+    img_og <- magick::image_read(i)
+    img_new <- magick::image_resize(img_og, new_dims(magick::image_info(img_og)[2:3])) %>%
       magick::image_normalize() %>%
       magick::image_contrast(sharpen = 10) %>%
       magick::image_enhance() %>%
       imager::magick2cimg()
-    return(img_out)
+    return(img_new)
   }
+}
+
+new_dims <- function(old_dims){
+  if(old_dims[1] >= old_dims[2]){
+    dims <- c(1500, round((1500*old_dims[2])/old_dims[1]))
+  } else {
+    dims <- c(round((1500*old_dims[1])/old_dims[2]), 1500)
+  }
+  return(paste0(dims[1],"x",dims[2]))
 }
 
 bkb_background <- function(img, crop, setNA, cs="RGB", c1, c2, c3){
