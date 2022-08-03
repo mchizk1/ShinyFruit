@@ -20,6 +20,8 @@ crops. In its present state, one can use ShinyFruit to measure the following tra
 ## To run the app locally...
 
     ShinyFruit::ShinyFruit()
+
+## The Full length tutorial can be found [here](https://github.com/mchizk1/ShinyFruit/blob/main/ShinyFruit.html)!
     
-Please any share any feedback, bugs, or new feature ideas with me so that I can continue
+Please feel free to share any feedback, bugs, or new feature ideas with me so that I can continue
 to improve this tool!
