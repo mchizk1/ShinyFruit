@@ -1,7 +1,7 @@
 colorspaces <- c("RGB", "HSB", "Lab")
 RGB <- c("Red", "Green", "Blue")
 HSB <- c("Hue", "Saturation", "Lightness")
-variableList <- c("RDR", "Drupelet Count", "Size")
+variableList <- c("Color-Based Feature", "Color Profile", "Drupelet Count", "Size")
 options(shiny.maxRequestSize = 30*1024^2)
 ui <- shiny::fluidPage(
   theme = bslib::bs_theme(bootswatch = "darkly"),
@@ -13,6 +13,7 @@ ui <- shiny::fluidPage(
                   shiny::plotOutput("image", click = shiny::clickOpts("img_click", F),
                                                         brush = shiny::brushOpts("img_crop", clip = F, resetOnNew = F),
                                                         height = "58%", width = "100%"),
+                  shiny::verbatimTextOutput("debug"),
                   shiny::conditionalPanel(condition = "output.fileUploaded",
                                           shinycssloaders::withSpinner(shiny::plotOutput("cs_hist", width = "100%")))),
     shiny::column(4,
@@ -54,7 +55,7 @@ ui <- shiny::fluidPage(
                                           shiny::checkboxGroupInput(inputId = "variables",
                                                                     label = "Select Variables",
                                                                     choices = variableList)),
-                  shiny::conditionalPanel(condition = "input.variables.includes('RDR')",
+                  shiny::conditionalPanel(condition = "input.variables.includes('Color-Based Feature')",
                                           shiny::selectInput(inputId = "col_space",
                                                              label = "Select Colorspace",
                                                              choices = colorspaces),

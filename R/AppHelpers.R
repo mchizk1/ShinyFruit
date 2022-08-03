@@ -19,7 +19,7 @@ pythag <- function(click1, click2){
 }
 
 # Runs image analysis over a batch of images applying current settings
-RunBatch <- function(indir, include_img=F,
+RunBatch <- function(indir, include_img=F, col=F,
                      drp=F, ber=F, rdr=NULL, convert=1,
                      crop=c(0,0,0,0), bkg){
   imgs <- list.files(path = indir, full.names = T)
@@ -29,7 +29,11 @@ RunBatch <- function(indir, include_img=F,
   }
   Out_df <- c()
   for(i in imgs){
-    Out_vec <- data.frame(file = stringr::str_extract(i, "(?<=/)([^/]*)$"))
+    Out_vec <- data.frame(File = stringr::str_extract(i, "(?<=/)([^/]*)$"),
+                          ColorSpace = bkg[[1]],
+                          BkgCh1Threshold= paste0("(",bkg[[2]][1],",", bkg[[2]][2],")"),
+                          BkgCh2Threshold= paste0("(",bkg[[3]][1],",", bkg[[3]][2],")"),
+                          BkgCh3Threshold= paste0("(",bkg[[4]][1],",", bkg[[4]][2],")"))
     # Set up image needed for analysis
     img_out <- bkb_process(i) %>%
       bkb_background(crop=crop, setNA=T, bkg[[1]], bkg[[2]], bkg[[3]], bkg[[4]])
@@ -39,6 +43,14 @@ RunBatch <- function(indir, include_img=F,
       ber_out <- data.frame(BerryCount = nrow(ber_df), Length = mean(ber_df$L)*convert,
                  Width = mean(ber_df$W)*convert, Size = mean(ber_df$Size)*(convert^2))
       Out_vec <- cbind(Out_vec, ber_out)
+    }
+    if(col){
+      col_lst <- ColProfile(img_out, bkg[[1]])
+      col_out <- data.frame(MeanRGB = paste0("(",round(col_lst$red),",",
+                                             round(col_lst$green),",",
+                                             round(col_lst$blue),")"),
+                            MeanColor = col_lst[4])
+      Out_vec <- cbind(Out_vec, col_out)
     }
     if(drp){
       drp_df <- DrpSummary(img_out)
@@ -79,5 +91,5 @@ RunBatch <- function(indir, include_img=F,
     shiny::incProgress(1/length(imgs))
   }
   filestamp <- lubridate::stamp("Jan17.1999.3-34-01")
-  write.csv(Out_df, paste0(outdir, "/BM_Out_", filestamp(Sys.time()),".csv"))
+  write.csv(Out_df, paste0(outdir, "/BM_Out_", filestamp(Sys.time()),".csv"), row.names = F)
 }

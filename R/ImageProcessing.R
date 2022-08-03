@@ -12,37 +12,12 @@ bkb_process <- function(img){
   }
 }
 
-# bkb_background <- function(img, crop, setNA){
-#   img <- imager::cimg2magick(img) %>%
-#     magick::image_flop()
-#   S <- magick::image_channel(img, "S") %>%
-#     magick::image_threshold(threshold = "20%", type = "black") %>%
-#     magick::image_morphology(method = "Erode", kernel = "Edges", iter = 3) %>%
-#     magick::image_morphology(method = "Dilate", kernel = "Edges", iter = 6) %>%
-#     magick::image_morphology(method = "Erode", kernel = "Edges", iter = 3) %>%
-#     magick::image_transparent(color = "black") %>%
-#     magick::image_fill(fuzz = 100, color = "rgb(0,0,255)", refcolor = "white")
-#   all <- c(img, S)
-#   img_out <- magick::image_mosaic(all) %>%
-#     imager::magick2cimg() %>%
-#     imager::draw_rect(crop[1], crop[3], crop[2], crop[4], color = c(0, 0, 1))
-#   if(setNA == T){
-#     img_out <- imager::colorise(img_out,
-#                                 (imager::R(img_out==0)&imager::G(img_out==0)&imager::B(img_out==1)),
-#                                 NA)
-#   } else {
-#     img_out <- imager::colorise(img_out,
-#                                 (imager::R(img_out==0)&imager::G(img_out==0)&imager::B(img_out==1)),
-#                                 "white")
-#   }
-#   gc()
-#   return(img_out)
-# }
-
 bkb_background <- function(img, crop, setNA, cs="RGB", c1, c2, c3){
   px <- RedDrupe(switchspace(img, cs), c1, c2, c3, T)
   img_out <- imager::colorise(img, px, c(0,0,1)) %>%
-    imager::draw_rect(crop[1], crop[3], crop[2], crop[4], color = c(0, 0, 1))
+    imager::mirror("y") %>%
+    imager::draw_rect(crop[1], crop[3], crop[2], crop[4], color = c(0, 0, 1)) %>%
+    imager::mirror("y")
   if(setNA == T){
     img_out <- imager::colorise(img_out,
                                 (imager::R(img_out==0)&imager::G(img_out==0)&imager::B(img_out==1)),
@@ -125,4 +100,23 @@ DrpPlot <- function(img, coord){
   drp_px <- (drp_img == 1) %>%
     imager::grow(imager::px.diamond(5))
   return(drp_px)
+}
+
+# creates a color profile of non-NA pixels in a cimg
+ColProfile <- function(img, cs){
+  ColKey <- col2rgb(colors()) %>%
+    t()
+  rownames(ColKey) <- colors()
+  if(cs != "RGB"){
+    img = switchspace(img, "RGB")
+  }
+  red <- imager::R(img) %>%
+    mean(na.rm = T)*255
+  green <- imager::G(img) %>%
+    mean(na.rm = T)*255
+  blue <- imager::B(img) %>%
+    mean(na.rm = T)*255
+  scores <- abs(ColKey[,1]-red) + abs(ColKey[,2]-green) + abs(ColKey[,3]-blue)
+  return(list(red = red, green = green, blue = blue,
+              color = rownames(ColKey)[which.min(scores)]))
 }

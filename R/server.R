@@ -1,7 +1,7 @@
 colorspaces <- c("RGB", "HSB", "Lab")
 RGB <- c("Red", "Green", "Blue")
 HSB <- c("Hue", "Saturation", "Lightness")
-variableList <- c("RDR", "Drupelet Count", "Size")
+variableList <- c("Color-Based Feature", "Color Profile", "Drupelet Count", "Size")
 options(shiny.maxRequestSize = 30*1024^2)
 server <- function(input, output, session){
 
@@ -20,13 +20,13 @@ server <- function(input, output, session){
     return(image1)})
   cs_cimg <- shiny::reactive({switchspace(img_na(), input$col_space)})
   cs_bkg  <- shiny::reactive({switchspace(image1(), input$col_space_bkg)})
-  shiny::observeEvent(input$sample_img, {
-    output$image <- shiny::renderPlot(
-      {image1() %>%
-          plot()},
-      width = 800, height = 533
-    )
-  })
+  # shiny::observeEvent(input$sample_img, {
+  #   output$image <- shiny::renderPlot(
+  #     {image1() %>%
+  #         plot()},
+  #     width = 800, height = 533
+  #   )
+  # })
 
   click <- reactiveVal(0)
   click1 <- reactiveVal(NULL)
@@ -34,7 +34,7 @@ server <- function(input, output, session){
   crop <- reactiveVal(c(0,0,0,0))
   sz_conv <- reactiveVal(1)
   line_len <- reactiveVal(NULL)
-  output$line_len <- renderText({"Measured Length? (pixels)"})
+  output$line_len <- renderText({"Click any two points to measure"})
   shiny::observeEvent(input$img_click, {
     click(isolate(click()+1))
     if(click() == 1){
@@ -74,7 +74,7 @@ server <- function(input, output, session){
   })
 
   shiny::observeEvent(cs(), {
-    if("RDR" %in% input$variables){
+    if("Color-Based Feature" %in% input$variables){
       labs <- ShinyFruit::cs_labs[,colnames(ShinyFruit::cs_labs) == input$col_space]
       shiny::updateSliderInput(session, inputId = "channel1", label = labs[1],
                                min = floor(min(imager::R(cs_cimg()), na.rm = T))-0.001,
@@ -152,8 +152,13 @@ server <- function(input, output, session){
       BerSummary(img_na())
     }
   })
+  ColOut <- shiny::reactive({
+    if("Color Profile" %in% input$variables){
+      ColProfile(img_na(), input$col_space)
+    }
+  })
   RDR_px <- shiny::reactive({
-    if("RDR" %in% input$variables){
+    if("Color-Based Feature" %in% input$variables){
       RedDrupe(cs_cimg(), input$channel1, input$channel2,
                input$channel3, input$despeckle)
     }
@@ -161,6 +166,14 @@ server <- function(input, output, session){
 
   # Rendering reactive text output
   BerTxt <- reactive({ paste0("Berry Count: ", BerOut()) })
+  ColTxt <- reactive({ if(is.list(ColOut())){
+    paste0("\nMean RGB Value: (", round(ColOut()$red),
+           ", ", round(ColOut()$green), ", ", round(ColOut()$blue), ")",
+           "\nMean Color: ", ColOut()$color)
+  } else {
+    paste0("")
+  }
+  })
   SzTxt <- reactive({ if(is.data.frame(SzOut())){
     paste0("\nMean Length: ", round(mean(SzOut()$L*sz_conv()))," ",input$units,
            "\nMean Width: ", round(mean(SzOut()$W*sz_conv()))," ",input$units,
@@ -178,39 +191,17 @@ server <- function(input, output, session){
   RdrTxt <- reactive({ if(imager::is.pixset(RDR_px())){
     red_px <- sum(RDR_px())
     black_px <-  sum(!imager::px.na(imager::R(cs_cimg())))
-    paste0("\nRDR detected: ", round(100*(red_px/black_px), 2), "%")
+    paste0("\nArea detected: ", round(100*(red_px/black_px), 2), "%")
   } else {
     paste0("")
   }
   })
   output$txtout <- shiny::renderText({
-    paste0(BerTxt(), SzTxt(), DrpTxt(), RdrTxt())
+    paste0(BerTxt(), SzTxt(), ColTxt(), DrpTxt(), RdrTxt())
   })
 
   step1 <- shiny::reactive({
-    list(input$img_click, input$clearclick, input$img_crop, input$clearcrop,
-         input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
-  })
-
-  shiny::observeEvent(step1(), {
-    if(input$submitcrop < 1){
-      image_mask <- bkb_background(image1(), c(0,0,0,0), F, input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
-      if(!is.null(click1())){
-        image_mask <- imager::draw_circle(image_mask, click1()[1], click1()[2], 5, "red")
-      }
-      if(!is.null(click2())){
-        image_mask <- imager::draw_circle(image_mask, click2()[1], click2()[2], 5, "red") %>%
-          imager::implot(lines(c(click1()[1], click2()[1]), c(click1()[2], click2()[2]), col="red",lwd=4))
-      }
-      if(!is.null(crop()) & input$submitsize > 0){
-        image_mask <- imager::draw_rect(image_mask, crop()[1], crop()[3], crop()[2], crop()[4],
-                                        color = "red", filled = T, opacity = 0.5)
-      }
-      output$image <- shiny::renderPlot({
-        image_mask %>% plot()
-      }, width = 900, height = 600)
-      outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
-    }
+    list(input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
   })
 
   img_step2 <- shiny::eventReactive(input$submitcrop, {
@@ -225,7 +216,10 @@ server <- function(input, output, session){
   })
   shiny::observeEvent(img_step2(), {
     output$image <- renderPlot({
-      img_step2() %>% plot()
+      img_step2() %>%
+        imager::cimg2magick() %>%
+        magick::image_flop() %>%
+        magick::image_ggplot()
     }, width = 900, height = 600)
     outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
   })
@@ -240,23 +234,79 @@ server <- function(input, output, session){
          input$variables)
   })
 
-  shiny::observeEvent(step2(), {
-    image_mask <- img_step2()
-    if("Drupelet Count" %in% input$variables){
-      image_mask <- imager::colorise(image_mask, drp_px(), col = "green")
-    }
-    if("RDR" %in% input$variables & imager::is.pixset(RDR_px())){
-      image_mask <- imager::colorise(image_mask, RDR_px(), col = "red", alpha = 0.5)
-    }
-    output$image <- shiny::renderPlot({
-      image_mask %>% plot()
-    }, width = 900, height = 600)
+  # shiny::observeEvent(step2(), {
+  #   image_mask <- img_step2()
+  #   if("Drupelet Count" %in% input$variables){
+  #     image_mask <- imager::colorise(image_mask, drp_px(), col = "green")
+  #   }
+  #   if("RDR" %in% input$variables & imager::is.pixset(RDR_px())){
+  #     image_mask <- imager::colorise(image_mask, RDR_px(), col = "red", alpha = 0.5)
+  #   }
+  #   output$image <- shiny::renderPlot({
+  #     image_mask %>% plot()
+  #   }, width = 900, height = 600)
+  # }, ignoreInit = T)
+
+  # Initial ggplot layer specifications (mostly off of the plot area for null-ish values)
+  fruit_img <- shiny::reactiveValues(main = PlaceHolder,
+                            oneclk = ggplot2::geom_blank(),
+                            twoclk = ggplot2::geom_blank(),
+                            lineref = ggplot2::geom_blank(),
+                            crop = ggplot2::geom_blank(),
+                            background = ggplot2::geom_blank())
+
+  # Initial layer - just the fruit image
+  shiny::observeEvent(input$sample_img, {
+    fruit_img$main <- image1() %>%
+      imager::cimg2magick() %>%
+      magick::image_flop() %>%
+      magick::image_ggplot()
+  })
+  # first click layer (red dot)
+  shiny::observeEvent(click1(), {
+    fruit_img$oneclk <- ggplot2::geom_point(ggplot2::aes(click1()[1],
+                                                         click1()[2]),
+                                            color = "red")
+  }, ignoreInit = T)
+  # second click layer (red dot and line)
+  shiny::observeEvent(click2(), {
+    fruit_img$twoclk <- ggplot2::geom_point(ggplot2::aes(click2()[1],
+                                                         click2()[2]),
+                                            color = "red")
+    fruit_img$lineref <- ggplot2::geom_segment(ggplot2::aes(click1()[1],
+                                                            click1()[2],
+                                                            xend = click2()[1],
+                                                            yend = click2()[2]),
+                                               color = "red")
+  }, ignoreInit = T)
+  # cropping layer
+  shiny::observeEvent(crop(), {
+    fruit_img$crop <- ggplot2::geom_rect(ggplot2::aes(xmin=crop()[1],
+                                                      xmax=crop()[2],
+                                                      ymin=crop()[3],
+                                                      ymax=crop()[4]),
+                                         color = "red", alpha = 0.5, fill = "red")
+  }, ignoreInit = T)
+  # background pixset updates main
+  shiny::observeEvent(step1(), {
+    fruit_img$main <- imager::colorise(image1(),
+                                       RedDrupe(cs_bkg(), input$channel1_bkg,
+                                                input$channel2_bkg, input$channel3_bkg, T),
+                                       col = "white") %>%
+      imager::cimg2magick() %>%
+      magick::image_flop() %>%
+      magick::image_ggplot()
   }, ignoreInit = T)
 
   output$image <- shiny::renderPlot(
-    {plot(PlaceHolder)},
+    {plot(fruit_img$main) +
+        fruit_img$oneclk +
+        fruit_img$twoclk +
+        fruit_img$lineref +
+        fruit_img$crop},
     width = 900, height = 600
   )
+
   observeEvent(input$folderbutton, {
     setwd(choose.dir())
     output$foldertxt <- shiny::renderText({getwd()})
@@ -266,7 +316,8 @@ server <- function(input, output, session){
     indir <- getwd()
     drp <- ("Drupelet Count" %in% input$variables)
     ber <- ("Size" %in% input$variables)
-    rdr <- if("RDR" %in% input$variables){
+    col <- ("Color Profile" %in% input$variables)
+    rdr <- if("Color-Based Feature" %in% input$variables){
       list(input$col_space, input$channel1, input$channel2, input$channel3, input$despeckle)
     } else {
       NULL
@@ -277,7 +328,7 @@ server <- function(input, output, session){
       batch_crop <- c(0,0,0,0)
     }
     shiny::withProgress(message = "Analyzing Images",{
-      RunBatch(indir, input$imgbat, drp, ber, rdr, sz_conv(), batch_crop, bkg)
+      RunBatch(indir, input$imgbat, col, drp, ber, rdr, sz_conv(), batch_crop, bkg)
     })
   })
   outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
