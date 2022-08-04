@@ -135,11 +135,11 @@ ColProfile <- function(img, cs){
   light <- c(as.matrix(imager::R(img))[maxloc$x[1],maxloc$y[1]]*255,
              as.matrix(imager::G(img))[maxloc$x[1],maxloc$y[1]]*255,
              as.matrix(imager::B(img))[maxloc$x[1],maxloc$y[1]]*255)
-  score_mid <- abs(rgb2rhs$R-mid[1]) + abs(rgb2rhs$G-mid[2]) + abs(rgb2rhs$B-mid[3])
-  score_dark <- abs(rgb2rhs$R-dark[1]) + abs(rgb2rhs$G-dark[2]) + abs(rgb2rhs$B-dark[3])
-  score_light <- abs(rgb2rhs$R-light[1]) + abs(rgb2rhs$G-light[2]) + abs(rgb2rhs$B-light[3])
+  score_mid <- abs(ShinyFruit::rgb2rhs$R-mid[1]) + abs(ShinyFruit::rgb2rhs$G-mid[2]) + abs(ShinyFruit::rgb2rhs$B-mid[3])
+  score_dark <- abs(ShinyFruit::rgb2rhs$R-dark[1]) + abs(ShinyFruit::rgb2rhs$G-dark[2]) + abs(ShinyFruit::rgb2rhs$B-dark[3])
+  score_light <- abs(ShinyFruit::rgb2rhs$R-light[1]) + abs(ShinyFruit::rgb2rhs$G-light[2]) + abs(ShinyFruit::rgb2rhs$B-light[3])
   return(list(red = mid[1], green = mid[2], blue = mid[3],
-              mid_color = rgb2rhs$english[which.min(score_mid)],
-              dark_color = rgb2rhs$english[which.min(score_dark)],
-              light_color = rgb2rhs$english[which.min(score_light)]))
+              mid_color = ShinyFruit::rgb2rhs$english[which.min(score_mid)],
+              dark_color = ShinyFruit::rgb2rhs$english[which.min(score_dark)],
+              light_color = ShinyFruit::rgb2rhs$english[which.min(score_light)]))
 }
