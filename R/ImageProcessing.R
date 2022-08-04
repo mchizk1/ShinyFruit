@@ -87,10 +87,16 @@ DrpSummary <- function(background_cimg){
 }
 
 # Applies a three-channel color threshold in an arbitrary colorspace
-RedDrupe <- function(cs_cimg, channel1, channel2, channel3, despeckle=F){
-  RDR_px <- (imager::R(cs_cimg) <= channel1[1] | imager::R(cs_cimg) >= channel1[2] |
-    imager::G(cs_cimg) <= channel2[1] | imager::G(cs_cimg) >= channel2[2] |
-    imager::B(cs_cimg) <= channel3[1] | imager::B(cs_cimg) >= channel3[2])
+RedDrupe <- function(cs_cimg, channel1, channel2, channel3, despeckle=F, invert = F){
+  if(invert){
+    RDR_px <- (imager::R(cs_cimg) >= channel1[1] & imager::R(cs_cimg) <= channel1[2] &
+                 imager::G(cs_cimg) >= channel2[1] & imager::G(cs_cimg) <= channel2[2] &
+                 imager::B(cs_cimg) >= channel3[1] & imager::B(cs_cimg) <= channel3[2])
+  } else {
+    RDR_px <- (imager::R(cs_cimg) <= channel1[1] | imager::R(cs_cimg) >= channel1[2] |
+                 imager::G(cs_cimg) <= channel2[1] | imager::G(cs_cimg) >= channel2[2] |
+                 imager::B(cs_cimg) <= channel3[1] | imager::B(cs_cimg) >= channel3[2])
+  }
   if(despeckle){
     RDR_px <- imager::clean(RDR_px, 10) & (!imager::px.na(RDR_px))
     RDR_px <- imager::fill(RDR_px, 20) & (!imager::px.na(RDR_px))
@@ -113,19 +119,27 @@ DrpPlot <- function(img, coord){
 
 # creates a color profile of non-NA pixels in a cimg
 ColProfile <- function(img, cs){
-  ColKey <- col2rgb(colors()) %>%
-    t()
-  rownames(ColKey) <- colors()
   if(cs != "RGB"){
     img = switchspace(img, "RGB")
   }
-  red <- imager::R(img) %>%
-    mean(na.rm = T)*255
-  green <- imager::G(img) %>%
-    mean(na.rm = T)*255
-  blue <- imager::B(img) %>%
-    mean(na.rm = T)*255
-  scores <- abs(ColKey[,1]-red) + abs(ColKey[,2]-green) + abs(ColKey[,3]-blue)
-  return(list(red = red, green = green, blue = blue,
-              color = rownames(ColKey)[which.min(scores)]))
+  mid <- c(median(imager::R(img), na.rm = T)*255,
+            median(imager::G(img), na.rm = T)*255,
+            median(imager::B(img), na.rm = T)*255)
+  gray <- imager::grayscale(img)
+  boxstats <- boxplot(gray, plot = F)$stats
+  minloc <- imager::get.locations(gray, function(x) x == boxstats[1])
+  maxloc <- imager::get.locations(gray, function(x) x == boxstats[5])
+  dark <- c(as.matrix(imager::R(img))[minloc$x[1], minloc$y[1]]*255,
+            as.matrix(imager::G(img))[minloc$x[1], minloc$y[1]]*255,
+            as.matrix(imager::B(img))[minloc$x[1], minloc$y[1]]*255)
+  light <- c(as.matrix(imager::R(img))[maxloc$x[1],maxloc$y[1]]*255,
+             as.matrix(imager::G(img))[maxloc$x[1],maxloc$y[1]]*255,
+             as.matrix(imager::B(img))[maxloc$x[1],maxloc$y[1]]*255)
+  score_mid <- abs(rgb2rhs$R-mid[1]) + abs(rgb2rhs$G-mid[2]) + abs(rgb2rhs$B-mid[3])
+  score_dark <- abs(rgb2rhs$R-dark[1]) + abs(rgb2rhs$G-dark[2]) + abs(rgb2rhs$B-dark[3])
+  score_light <- abs(rgb2rhs$R-light[1]) + abs(rgb2rhs$G-light[2]) + abs(rgb2rhs$B-light[3])
+  return(list(red = mid[1], green = mid[2], blue = mid[3],
+              mid_color = rgb2rhs$english[which.min(score_mid)],
+              dark_color = rgb2rhs$english[which.min(score_dark)],
+              light_color = rgb2rhs$english[which.min(score_light)]))
 }

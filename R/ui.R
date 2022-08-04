@@ -1,7 +1,7 @@
 colorspaces <- c("RGB", "HSB", "Lab")
 RGB <- c("Red", "Green", "Blue")
 HSB <- c("Hue", "Saturation", "Lightness")
-variableList <- c("Color-Based Feature", "Color Profile", "Drupelet Count", "Size")
+variableList <- c("Color-Based Feature", "Color Profile", "Size")
 options(shiny.maxRequestSize = 30*1024^2)
 ui <- shiny::fluidPage(
   theme = bslib::bs_theme(bootswatch = "darkly"),
@@ -68,7 +68,12 @@ ui <- shiny::fluidPage(
                                           shiny::sliderInput(inputId = "channel3",
                                                              label = "Green",
                                                              min = 0, max = 1, value = c(0, 1)),
-                                          shiny::checkboxInput("despeckle", "Despeckle?", value = T)),
+                                          shiny::fluidRow(shiny::column(6, shiny::checkboxGroupInput("CFops", "Output Options",
+                                                                                                     choices = c("Despeckle", "Show Mean RGB",
+                                                                                                                 "Show Mask"),
+                                                                                                     selected = "Show Mask")),
+                                                          shiny::column(6, shiny::selectInput("colfeature", "Mask Color",
+                                                                                              c("red", "green", "blue", "black", "white"))))),
                   shiny::conditionalPanel(condition = "input.submitcrop",
                                           shiny::actionButton("step3", "Proceed to Step 3")),
                   shiny::conditionalPanel(condition = "input.step3",

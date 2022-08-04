@@ -21,7 +21,7 @@ pythag <- function(click1, click2){
 # Runs image analysis over a batch of images applying current settings
 RunBatch <- function(indir, include_img=F, col=F,
                      drp=F, ber=F, rdr=NULL, convert=1,
-                     crop=c(0,0,0,0), bkg){
+                     crop=c(0,0,0,0), bkg, mask_col="red"){
   imgs <- list.files(path = indir, full.names = T)
   outdir <- paste0(indir, "/ShinyFruit_Out")
   if(!dir.exists(outdir)){
@@ -31,9 +31,9 @@ RunBatch <- function(indir, include_img=F, col=F,
   for(i in imgs){
     Out_vec <- data.frame(File = stringr::str_extract(i, "(?<=/)([^/]*)$"),
                           ColorSpace = bkg[[1]],
-                          BkgCh1Threshold= paste0("(",bkg[[2]][1],",", bkg[[2]][2],")"),
-                          BkgCh2Threshold= paste0("(",bkg[[3]][1],",", bkg[[3]][2],")"),
-                          BkgCh3Threshold= paste0("(",bkg[[4]][1],",", bkg[[4]][2],")"))
+                          BkgCh1Threshold= paste0("(",bkg[[2]][1],":", bkg[[2]][2],")"),
+                          BkgCh2Threshold= paste0("(",bkg[[3]][1],":", bkg[[3]][2],")"),
+                          BkgCh3Threshold= paste0("(",bkg[[4]][1],":", bkg[[4]][2],")"))
     # Set up image needed for analysis
     img_out <- bkb_process(i) %>%
       bkb_background(crop=crop, setNA=T, bkg[[1]], bkg[[2]], bkg[[3]], bkg[[4]])
@@ -46,10 +46,12 @@ RunBatch <- function(indir, include_img=F, col=F,
     }
     if(col){
       col_lst <- ColProfile(img_out, bkg[[1]])
-      col_out <- data.frame(MeanRGB = paste0("(",round(col_lst$red),",",
-                                             round(col_lst$green),",",
+      col_out <- data.frame(MeanRGB = paste0("(",round(col_lst$red),":",
+                                             round(col_lst$green),":",
                                              round(col_lst$blue),")"),
-                            MeanColor = col_lst[4])
+                            RHSDarkColor = col_lst$dark_color,
+                            RHSMidColor = col_lst$mid_color,
+                            RHSLightColor = col_lst$light_color)
       Out_vec <- cbind(Out_vec, col_out)
     }
     if(drp){
@@ -69,10 +71,23 @@ RunBatch <- function(indir, include_img=F, col=F,
       } else if (rdr[[1]] == "Lab"){
         img_cs <- switchspace(img_out, "Lab")
       }
-      rdr_px <- RedDrupe(img_cs, rdr[[2]], rdr[[3]], rdr[[4]], rdr[[5]])
+      rdr_px <- RedDrupe(img_cs, rdr[[2]], rdr[[3]], rdr[[4]], rdr[[5]], T)
       rdr_sum <- sum(rdr_px, na.rm = T)
       bkb_sum <- sum(!imager::px.na(imager::R(img_out)))
-      RDR_out <- data.frame(RDR_prop = (rdr_sum/bkb_sum))
+      tmp_img <- img_out
+      tmp_img[imager::as.pixset(1-rdr_px)] <- NA
+      rdr_col <- ColProfile(tmp_img, bkg[[1]])
+      RDR_out <- data.frame(FtColorSpace = rdr[[1]],
+                            FtCh1Threshold = paste0("(",rdr[[2]][1],":", rdr[[2]][2],")"),
+                            FtCh2Threshold = paste0("(",rdr[[3]][1],":", rdr[[3]][2],")"),
+                            FtCh3Threshold = paste0("(",rdr[[4]][1],":", rdr[[4]][2],")"),
+                            Feature_prop = (rdr_sum/bkb_sum),
+                            FeatureRGB = paste0("(",round(rdr_col$red),":",
+                                             round(rdr_col$green),":",
+                                             round(rdr_col$blue),")"),
+                            FeatureDarkRHS = rdr_col$dark_color,
+                            FeatureMidRHS = rdr_col$mid_color,
+                            FeatureLightRHS = rdr_col$light_color)
       Out_vec <- cbind(Out_vec, RDR_out)
     }
     Out_df <- rbind(Out_df, Out_vec)
@@ -83,7 +98,7 @@ RunBatch <- function(indir, include_img=F, col=F,
         img_qc <- imager::colorise(img_qc, DrpPlot(img_out, drp_df), "green")
       }
       if(!is.null(rdr)){
-        img_qc <- imager::colorise(img_qc, rdr_px, col = "red", alpha = 0.5)
+        img_qc <- imager::colorise(img_qc, rdr_px, col = mask_col, alpha = 0.5)
       }
       imager::save.image(img_qc, paste0(outdir,"/",filename,".jpg"))
     }

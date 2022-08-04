@@ -1,7 +1,7 @@
 colorspaces <- c("RGB", "HSB", "Lab")
 RGB <- c("Red", "Green", "Blue")
 HSB <- c("Hue", "Saturation", "Lightness")
-variableList <- c("Color-Based Feature", "Color Profile", "Drupelet Count", "Size")
+variableList <- c("Color-Based Feature", "Color Profile", "Size")
 options(shiny.maxRequestSize = 30*1024^2)
 server <- function(input, output, session){
 
@@ -160,16 +160,24 @@ server <- function(input, output, session){
   RDR_px <- shiny::reactive({
     if("Color-Based Feature" %in% input$variables){
       RedDrupe(cs_cimg(), input$channel1, input$channel2,
-               input$channel3, input$despeckle)
+               input$channel3, ("Despeckle" %in% input$CFops),
+               T)
+    }
+  })
+  CfOut <- shiny::reactive({
+    if("Color-Based Feature" %in% input$variables){
+      ColProfile(cf_na(), input$col_space)
     }
   })
 
   # Rendering reactive text output
   BerTxt <- reactive({ paste0("Berry Count: ", BerOut()) })
-  ColTxt <- reactive({ if(is.list(ColOut())){
-    paste0("\nMean RGB Value: (", round(ColOut()$red),
+  ColTxt <- reactive({ if (is.list(ColOut())){
+    paste0("\nMid RGB Value: (", round(ColOut()$red),
            ", ", round(ColOut()$green), ", ", round(ColOut()$blue), ")",
-           "\nMean Color: ", ColOut()$color)
+           "\nDarkest RHS Color: ", ColOut()$dark_color,
+           "\nMid RHS Color: ", ColOut()$mid_color,
+           "\nLightest RHS Color: ", ColOut()$light_color)
   } else {
     paste0("")
   }
@@ -188,10 +196,20 @@ server <- function(input, output, session){
     paste0("")
   }
   })
-  RdrTxt <- reactive({ if(imager::is.pixset(RDR_px())){
+  RdrTxt <- reactive({ if (imager::is.pixset(RDR_px()) &
+                          "Show Mean RGB" %in% input$CFops){
     red_px <- sum(RDR_px())
     black_px <-  sum(!imager::px.na(imager::R(cs_cimg())))
-    paste0("\nArea detected: ", round(100*(red_px/black_px), 2), "%")
+    paste0("\nFeature Detected: ", round(100*(red_px/black_px), 2), "%",
+           "\nMean Feature RGB: (", round(CfOut()$red),
+           ", ", round(CfOut()$green), ", ", round(CfOut()$blue), ")",
+           "\nFeature Darkest RHS: ", CfOut()$dark_color,
+           "\nFeature Mid RHS: ", CfOut()$mid_color,
+           "\nFeature Lightest RHS: ", CfOut()$light_color)
+  } else if (imager::is.pixset(RDR_px())){
+    red_px <- sum(RDR_px())
+    black_px <-  sum(!imager::px.na(imager::R(cs_cimg())))
+    paste0("\nFeature Detected: ", round(100*(red_px/black_px), 2), "%")
   } else {
     paste0("")
   }
@@ -214,6 +232,13 @@ server <- function(input, output, session){
       bkb_background(image1(), crop(), T, input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
     }
   })
+  cf_na <- shiny::eventReactive(step2(), {
+    if(imager::is.pixset(RDR_px())){
+      tmp_step2 <- img_step2()
+      tmp_step2[imager::as.pixset(1-RDR_px())] <- NA
+      return(tmp_step2)
+    }
+  })
   shiny::observeEvent(img_step2(), {
     output$image <- renderPlot({
       img_step2() %>%
@@ -230,22 +255,27 @@ server <- function(input, output, session){
   drp_px <- shiny::reactive({ DrpPlot(img_na(), DrpOut()) })
 
   step2 <- shiny::reactive({
-    list(input$channel1, input$channel2, input$channel3, input$despeckle,
-         input$variables)
+    list(input$channel1, input$channel2, input$channel3, ("Despeckle" %in% input$CFops),
+         input$variables, input$colfeature)
   })
 
-  # shiny::observeEvent(step2(), {
-  #   image_mask <- img_step2()
-  #   if("Drupelet Count" %in% input$variables){
-  #     image_mask <- imager::colorise(image_mask, drp_px(), col = "green")
-  #   }
-  #   if("RDR" %in% input$variables & imager::is.pixset(RDR_px())){
-  #     image_mask <- imager::colorise(image_mask, RDR_px(), col = "red", alpha = 0.5)
-  #   }
-  #   output$image <- shiny::renderPlot({
-  #     image_mask %>% plot()
-  #   }, width = 900, height = 600)
-  # }, ignoreInit = T)
+  shiny::observeEvent(step2(), {
+    image_mask <- img_step2()
+    if("Drupelet Count" %in% input$variables){
+      image_mask <- imager::colorise(image_mask, drp_px(), col = "green")
+    }
+    if("Color-Based Feature" %in% input$variables &
+       imager::is.pixset(RDR_px()) & "Show Mask" %in% input$CFops){
+      image_mask <- imager::colorise(image_mask, RDR_px(),
+                                     col = col2rgb(input$colfeature), alpha = 0.5)
+    }
+    output$image <- shiny::renderPlot({
+      image_mask %>%
+        imager::cimg2magick() %>%
+        magick::image_flop() %>%
+        magick::image_ggplot()
+    }, width = 900, height = 600)
+  }, ignoreInit = T)
 
   # Initial ggplot layer specifications (mostly off of the plot area for null-ish values)
   fruit_img <- shiny::reactiveValues(main = PlaceHolder,
@@ -318,7 +348,7 @@ server <- function(input, output, session){
     ber <- ("Size" %in% input$variables)
     col <- ("Color Profile" %in% input$variables)
     rdr <- if("Color-Based Feature" %in% input$variables){
-      list(input$col_space, input$channel1, input$channel2, input$channel3, input$despeckle)
+      list(input$col_space, input$channel1, input$channel2, input$channel3, ("Despeckle" %in% input$CFops))
     } else {
       NULL
     }
@@ -328,7 +358,8 @@ server <- function(input, output, session){
       batch_crop <- c(0,0,0,0)
     }
     shiny::withProgress(message = "Analyzing Images",{
-      RunBatch(indir, input$imgbat, col, drp, ber, rdr, sz_conv(), batch_crop, bkg)
+      RunBatch(indir, input$imgbat, col, drp, ber, rdr, sz_conv(), batch_crop, bkg,
+               input$colfeature)
     })
   })
   outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
