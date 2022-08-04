@@ -106,5 +106,5 @@ RunBatch <- function(indir, include_img=F, col=F,
     shiny::incProgress(1/length(imgs))
   }
   filestamp <- lubridate::stamp("Jan17.1999.3-34-01")
-  write.csv(Out_df, paste0(outdir, "/BM_Out_", filestamp(Sys.time()),".csv"), row.names = F)
+  write.csv(Out_df, paste0(outdir, "/SF_Out_", filestamp(Sys.time()),".csv"), row.names = F)
 }
