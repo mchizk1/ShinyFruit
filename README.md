@@ -17,9 +17,13 @@ directory. In its present state, one can use ShinyFruit to measure the following
 ## Installation
 
     install.packages("devtools")
-    devtools::install_github("mchizk1/ShinyFruit")
+    devtools::install_github("mchizk1/ShinyFruit", build_vignettes = T)
     
-## To run the app locally...
+## Check out the vignette for a full tutorial
+
+    vignette("ShinyFruit-Tutorial")
+    
+## Or just jump right in by booting up the app!
 
     ShinyFruit::ShinyFruit()
     
