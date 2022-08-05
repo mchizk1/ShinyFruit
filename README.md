@@ -1,16 +1,18 @@
 # ShinyFruit
 
-An R shiny application for interactive image phenotyping of small fruits. This app
-is currently optimized for handling blackberry images, but future updates will
-focus on expanding flexible data collection options over a wider range of horticultural 
-crops. In its present state, one can use ShinyFruit to measure the following traits:
+An R shiny application for interactive image phenotyping of fruits and vegetables. The main goal of
+creating this app was to provide a reasonably simple and tailored solution for breeders and horticulturalists
+to efficiently collect data about size, color, and damage across large numbers of images.  The user 
+simply sets parameters for a single sample image and those settings are applied to all images in a given
+directory. In its present state, one can use ShinyFruit to measure the following traits:
 
 * Length
 * Width
 * Area
 * Fruit Count
-* Drupelet Count
-* Discolored Regions (i.e. Red Drupelet Reversion)
+* Proportions of Discolored Regions (i.e. Red Drupelet Reversion in blackberry)
+* Median RGB values
+* RHS descriptive color profiles
 
 ## Installation
 
