@@ -15,8 +15,8 @@ server <- function(input, output, session){
   })
 
   #This observer updates the image when the user selects a file
-  image1 <- shiny::eventReactive(input$sample_img$datapath, {
-    image1 <- bkb_process(input$sample_img$datapath)
+  image1 <- shiny::eventReactive(list(input$sample_img$datapath, input$preprocess), {
+    image1 <- bkb_process(input$sample_img$datapath, input$preprocess)
     return(image1)})
   cs_cimg <- shiny::reactive({switchspace(img_na(), input$col_space)})
   cs_bkg  <- shiny::reactive({switchspace(image1(), input$col_space_bkg)})
@@ -359,7 +359,7 @@ server <- function(input, output, session){
     }
     shiny::withProgress(message = "Analyzing Images",{
       RunBatch(indir, input$imgbat, col, drp, ber, rdr, sz_conv(), batch_crop, bkg,
-               input$colfeature)
+               input$colfeature, preprocess=input$preprocess)
     })
   })
   outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)

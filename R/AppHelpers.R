@@ -21,7 +21,8 @@ pythag <- function(click1, click2){
 # Runs image analysis over a batch of images applying current settings
 RunBatch <- function(indir, include_img=F, col=F,
                      drp=F, ber=F, rdr=NULL, convert=1,
-                     crop=c(0,0,0,0), bkg, mask_col="red"){
+                     crop=c(0,0,0,0), bkg, mask_col="red",
+                     preprocess=T){
   imgs <- list.files(path = indir, full.names = T)
   outdir <- paste0(indir, "/ShinyFruit_Out")
   if(!dir.exists(outdir)){
@@ -35,7 +36,7 @@ RunBatch <- function(indir, include_img=F, col=F,
                           BkgCh2Threshold= paste0("(",bkg[[3]][1],":", bkg[[3]][2],")"),
                           BkgCh3Threshold= paste0("(",bkg[[4]][1],":", bkg[[4]][2],")"))
     # Set up image needed for analysis
-    img_out <- bkb_process(i) %>%
+    img_out <- bkb_process(i, preprocess) %>%
       bkb_background(crop=crop, setNA=T, bkg[[1]], bkg[[2]], bkg[[3]], bkg[[4]])
     # Get data for spreadsheet output
     if(ber){

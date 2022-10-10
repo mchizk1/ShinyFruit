@@ -1,13 +1,18 @@
 # Sets all background pixels to NA
-bkb_process <- function(img){
+bkb_process <- function(img, preprocess){
   for(i in img){
     filename <- paste0(stringr::str_extract(i, "(?<=/)IMG(.*)(?=\\.JPG$)"),".jpg")
     img_og <- magick::image_read(i)
-    img_new <- magick::image_resize(img_og, new_dims(magick::image_info(img_og)[2:3])) %>%
-      magick::image_normalize() %>%
-      magick::image_contrast(sharpen = 10) %>%
-      magick::image_enhance() %>%
-      imager::magick2cimg()
+    if(preprocess){
+      img_new <- magick::image_resize(img_og, new_dims(magick::image_info(img_og)[2:3])) %>%
+        magick::image_normalize() %>%
+        magick::image_contrast(sharpen = 10) %>%
+        magick::image_enhance() %>%
+        imager::magick2cimg()
+    } else {
+      img_new <- magick::image_resize(img_og, new_dims(magick::image_info(img_og)[2:3])) %>%
+        imager::magick2cimg()
+    }
     return(img_new)
   }
 }
