@@ -13,9 +13,10 @@ ui <- shiny::fluidPage(
                   shiny::plotOutput("image", click = shiny::clickOpts("img_click", F),
                                                         brush = shiny::brushOpts("img_crop", clip = F, resetOnNew = F),
                                                         height = "58%", width = "100%"),
-                  shiny::verbatimTextOutput("debug"),
-                  shiny::conditionalPanel(condition = "output.fileUploaded",
-                                          shinycssloaders::withSpinner(shiny::plotOutput("cs_hist", width = "100%")))),
+                  shiny::verbatimTextOutput("debug")
+                  # ,shiny::conditionalPanel(condition = "output.fileUploaded",
+                  #                         shinycssloaders::withSpinner(shiny::plotOutput("cs_hist", width = "100%")))
+                  ),
     shiny::column(4,
                   shiny::h3("Control Panel"),
                   shiny::conditionalPanel(condition = "input.submitcrop < 1",
