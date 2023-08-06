@@ -337,10 +337,27 @@ server <- function(input, output, session){
     width = 900, height = 600
   )
 
-  observeEvent(input$folderbutton, {
-    setwd(choose.dir())
-    output$foldertxt <- shiny::renderText({getwd()})
+  roots <- c(home = normalizePath("~/.."))
+  shinyFiles::shinyDirChoose(
+    input,
+    'folderbutton',
+    roots = roots,
+    filetypes = c("", "jpeg", "JPEG", "jpg", "JPG")
+  )
+  output$foldertxt <- shiny::renderPrint({
+    folderselected$datapath
   })
+  folderselected <- reactiveValues(datapath = getwd())
+  observeEvent(input$folderbutton, {
+    try(folderselected$datapath <- as.character(shinyFiles::parseDirPath(roots, input$folderbutton)))
+  }, ignoreNULL = T)
+  observeEvent(folderselected$datapath, {
+    try(
+      if(dir.exists(folderselected$datapath)){
+        setwd(folderselected$datapath)
+      }
+    )
+  }, ignoreNULL = T, ignoreInit = T)
   observeEvent(input$runbutton, {
     bkg <- list(input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
     indir <- getwd()
