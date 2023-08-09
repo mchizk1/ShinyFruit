@@ -20,7 +20,7 @@ ui <- shiny::fluidPage(
       #
     ),
     shiny::sidebarPanel(
-      style = "height: 90vh; overflow-y: auto; background-color: #1C2E4A;",
+      style = "height: 90vh; overflow-y: auto; background-color: #2E2848;",
       shiny::h3("Control Panel"),
       shiny::conditionalPanel(condition = "input.submitcrop < 1",
                               shiny::h4("Step 1: Apply Background Filters"),

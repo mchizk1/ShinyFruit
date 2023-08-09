@@ -245,7 +245,7 @@ server <- function(input, output, session){
         imager::cimg2magick() %>%
         magick::image_flop() %>%
         magick::image_ggplot()
-    }, width = 900, height = 600)
+    }, width = 650, height = 433)
     outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
   })
 
@@ -274,11 +274,12 @@ server <- function(input, output, session){
         imager::cimg2magick() %>%
         magick::image_flop() %>%
         magick::image_ggplot()
-    }, width = 900, height = 600)
+    }, width = 650, height = 433)
   }, ignoreInit = T)
 
   # Initial ggplot layer specifications (mostly off of the plot area for null-ish values)
-  fruit_img <- shiny::reactiveValues(main = PlaceHolder,
+  fruit_img <- shiny::reactiveValues(
+    main = magick::image_ggplot(magick::image_read("inst/blackberry.png")),
                             oneclk = ggplot2::geom_blank(),
                             twoclk = ggplot2::geom_blank(),
                             lineref = ggplot2::geom_blank(),
@@ -334,7 +335,7 @@ server <- function(input, output, session){
         fruit_img$twoclk +
         fruit_img$lineref +
         fruit_img$crop},
-    width = 900, height = 600
+    width = 650, height = 433
   )
 
   roots <- c(home = normalizePath("~/.."))
