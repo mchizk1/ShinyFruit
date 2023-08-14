@@ -279,7 +279,7 @@ server <- function(input, output, session){
 
   # Initial ggplot layer specifications (mostly off of the plot area for null-ish values)
   fruit_img <- shiny::reactiveValues(
-    main = magick::image_ggplot(magick::image_read("inst/blackberry.png")),
+    main = magick::image_ggplot(magick::image_read(system.file("blackberry.png", package = "ShinyFruit"))),
                             oneclk = ggplot2::geom_blank(),
                             twoclk = ggplot2::geom_blank(),
                             lineref = ggplot2::geom_blank(),
