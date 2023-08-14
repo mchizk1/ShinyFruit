@@ -1,7 +1,7 @@
 Package: ShinyFruit
 Type: Package
 Title: Batch Image Analysis GUI for Small Fruits
-Version: 0.1.0
+Version: 0.1.1
 Author: Mason Chizk
 Maintainer: Mason Chizk <tmchizk@uark.edu>
 Description: This package uses C++ image processing methods contained in the 
