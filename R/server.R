@@ -346,7 +346,9 @@ server <- function(input, output, session){
     filetypes = c("", "jpeg", "JPEG", "jpg", "JPG")
   )
   output$foldertxt <- shiny::renderPrint({
-    folderselected$datapath
+    str(
+      folderselected$datapath
+    )
   })
   folderselected <- reactiveValues(datapath = getwd())
   observeEvent(input$folderbutton, {
