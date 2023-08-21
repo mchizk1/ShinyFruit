@@ -338,7 +338,11 @@ server <- function(input, output, session){
     width = 650, height = 433
   )
 
-  roots <- c(home = normalizePath("~/.."))
+  if(.Platform$OS.type == "windows"){
+    roots <- c(home = normalizePath("~/.."))
+  } else {
+    roots <- c(home = normalizePath("~"))
+  }
   shinyFiles::shinyDirChoose(
     input,
     'folderbutton',
