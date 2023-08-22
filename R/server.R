@@ -351,21 +351,28 @@ server <- function(input, output, session){
   )
   output$foldertxt <- shiny::renderPrint({
     str(
-      folderselected$datapath
+      list(
+        folderselected = folderselected(),
+        roots = roots
+        # folderbutton = input$folderbutton
+        # exists = dir.exists(folderselected$datapath)
+      )
     )
   })
-  folderselected <- reactiveValues(datapath = getwd())
-  observeEvent(input$folderbutton, {
-    try(folderselected$datapath <- as.character(shinyFiles::parseDirPath(roots, input$folderbutton)))
-  }, ignoreNULL = T)
-  observeEvent(folderselected$datapath, {
-    try(
-      if(dir.exists(folderselected$datapath)){
-        setwd(folderselected$datapath)
-      }
-    )
-  }, ignoreNULL = T, ignoreInit = T)
+
+  folderselected <- reactive({
+    if(length(input$folderbutton) > 1){
+      as.character(shinyFiles::parseDirPath(roots, input$folderbutton))
+    } else {
+      getwd()
+    }
+  })
+
+  ##############################################################################
+
+
   observeEvent(input$runbutton, {
+    setwd(folderselected())
     bkg <- list(input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
     indir <- getwd()
     drp <- ("Drupelet Count" %in% input$variables)
