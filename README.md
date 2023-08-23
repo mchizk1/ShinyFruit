@@ -28,7 +28,7 @@ to improve this tool!
     
 ## Or just jump right in by booting up the app!
 
-    ShinyFruit::ShinyFruit()
+    ShinyFruit::run_app()
 
 ## What's happening behind the scenes?
 
