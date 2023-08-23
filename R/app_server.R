@@ -2,18 +2,25 @@ colorspaces <- c("RGB", "HSB", "Lab")
 RGB <- c("Red", "Green", "Blue")
 HSB <- c("Hue", "Saturation", "Lightness")
 variableList <- c("Color-Based Feature", "Color Profile", "Size")
-options(shiny.maxRequestSize = 30*1024^2)
-server <- function(input, output, session){
 
+#' The application server-side
+#'
+#' @param input,output,session Internal parameters for {shiny}.
+#'     DO NOT REMOVE.
+#' @import shiny
+#' @import shinyFiles
+#' @noRd
+app_server <- function(input, output, session) {
+  options(shiny.maxRequestSize = 30*1024^2)
   Values <- reactiveValues(old="start")
   session$onFlush(once=FALSE, function(){
     shiny::isolate({ Values$old<-input$col_space })
   })
-
+  
   output$fileUploaded <- shiny::reactive({
     output$fileUploaded <- shiny::renderText(input$sample_img$name)
   })
-
+  
   #This observer updates the image when the user selects a file
   image1 <- shiny::eventReactive(list(input$sample_img$datapath, input$preprocess), {
     image1 <- bkb_process(input$sample_img$datapath, input$preprocess)
@@ -27,7 +34,7 @@ server <- function(input, output, session){
   #     width = 800, height = 533
   #   )
   # })
-
+  
   click <- reactiveVal(0)
   click1 <- reactiveVal(NULL)
   click2 <- reactiveVal(NULL)
@@ -67,12 +74,12 @@ server <- function(input, output, session){
   shiny::observeEvent(input$clearcrop, {
     crop(NULL)
   })
-
+  
   #This observer plots a distribution of colors for the RDR sliders
   cs <- shiny::reactive({
     list(input$col_space, input$variables)
   })
-
+  
   shiny::observeEvent(cs(), {
     if("Color-Based Feature" %in% input$variables){
       labs <- ShinyFruit::cs_labs[,colnames(ShinyFruit::cs_labs) == input$col_space]
@@ -103,9 +110,9 @@ server <- function(input, output, session){
       }, width = 600)
     }
   }, ignoreInit = T)
-
+  
   #This observer plots a distribution of colors for the background sliders
-
+  
   shiny::observeEvent(list(input$col_space_bkg, input$sample_img), {
     if(!is.null(input$sample_img)){
       labs <- ShinyFruit::cs_labs[,colnames(ShinyFruit::cs_labs) == input$col_space_bkg]
@@ -136,7 +143,7 @@ server <- function(input, output, session){
       }, width = 600)
     }
   }, ignoreInit = T)
-
+  
   # Creating stats outputs from checkbox inputs
   BerOut <- shiny::eventReactive(img_na(), {
     ber_num <- BerSummary(img_na(), stats=F)
@@ -169,7 +176,7 @@ server <- function(input, output, session){
       ColProfile(cf_na(), input$col_space)
     }
   })
-
+  
   # Rendering reactive text output
   BerTxt <- reactive({ paste0("Berry Count: ", BerOut()) })
   ColTxt <- reactive({ if (is.list(ColOut())){
@@ -197,7 +204,7 @@ server <- function(input, output, session){
   }
   })
   RdrTxt <- reactive({ if (imager::is.pixset(RDR_px()) &
-                          "Show Mean RGB" %in% input$CFops){
+                           "Show Mean RGB" %in% input$CFops){
     red_px <- sum(RDR_px())
     black_px <-  sum(!imager::px.na(imager::R(cs_cimg())))
     paste0("\nFeature Detected: ", round(100*(red_px/black_px), 2), "%",
@@ -217,11 +224,11 @@ server <- function(input, output, session){
   output$txtout <- shiny::renderText({
     paste0(BerTxt(), SzTxt(), ColTxt(), DrpTxt(), RdrTxt())
   })
-
+  
   step1 <- shiny::reactive({
     list(input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
   })
-
+  
   img_step2 <- shiny::eventReactive(input$submitcrop, {
     if(is.numeric(crop())){
       bkb_background(image1(), crop(), F, input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
@@ -248,17 +255,17 @@ server <- function(input, output, session){
     }, width = 650, height = 433)
     outputOptions(output, 'fileUploaded', suspendWhenHidden=FALSE)
   })
-
-
+  
+  
   # Masks for visual quality checking
-
+  
   drp_px <- shiny::reactive({ DrpPlot(img_na(), DrpOut()) })
-
+  
   step2 <- shiny::reactive({
     list(input$channel1, input$channel2, input$channel3, ("Despeckle" %in% input$CFops),
          input$variables, input$colfeature)
   })
-
+  
   shiny::observeEvent(step2(), {
     image_mask <- img_step2()
     if("Drupelet Count" %in% input$variables){
@@ -276,16 +283,17 @@ server <- function(input, output, session){
         magick::image_ggplot()
     }, width = 650, height = 433)
   }, ignoreInit = T)
-
+  
   # Initial ggplot layer specifications (mostly off of the plot area for null-ish values)
   fruit_img <- shiny::reactiveValues(
-    main = magick::image_ggplot(magick::image_read(system.file("blackberry.png", package = "ShinyFruit"))),
-                            oneclk = ggplot2::geom_blank(),
-                            twoclk = ggplot2::geom_blank(),
-                            lineref = ggplot2::geom_blank(),
-                            crop = ggplot2::geom_blank(),
-                            background = ggplot2::geom_blank())
-
+    main = magick::image_ggplot(magick::image_read(system.file("blackberry.png", 
+                                                             package = "ShinyFruit"))),
+    oneclk = ggplot2::geom_blank(),
+    twoclk = ggplot2::geom_blank(),
+    lineref = ggplot2::geom_blank(),
+    crop = ggplot2::geom_blank(),
+    background = ggplot2::geom_blank())
+  
   # Initial layer - just the fruit image
   shiny::observeEvent(input$sample_img, {
     fruit_img$main <- image1() %>%
@@ -328,7 +336,7 @@ server <- function(input, output, session){
       magick::image_flop() %>%
       magick::image_ggplot()
   }, ignoreInit = T)
-
+  
   output$image <- shiny::renderPlot(
     {plot(fruit_img$main) +
         fruit_img$oneclk +
@@ -337,13 +345,13 @@ server <- function(input, output, session){
         fruit_img$crop},
     width = 650, height = 433
   )
-
+  
   if(.Platform$OS.type == "windows"){
     roots <- c(home = normalizePath("~/.."))
   } else {
     roots <- c(home = normalizePath("~"))
   }
-  shinyFiles::shinyDirChoose(
+  shinyDirChoose(
     input,
     'folderbutton',
     roots = roots,
@@ -352,25 +360,24 @@ server <- function(input, output, session){
   output$foldertxt <- shiny::renderPrint({
     str(
       list(
-        folderselected = folderselected(),
-        roots = roots
+        Selected = folderselected()
         # folderbutton = input$folderbutton
         # exists = dir.exists(folderselected$datapath)
       )
     )
   })
-
+  
   folderselected <- reactive({
     if(length(input$folderbutton) > 1){
-      as.character(shinyFiles::parseDirPath(roots, input$folderbutton))
+      as.character(parseDirPath(roots, input$folderbutton))
     } else {
       getwd()
     }
   })
-
+  
   ##############################################################################
-
-
+  
+  
   observeEvent(input$runbutton, {
     bkg <- list(input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
     indir <- folderselected()

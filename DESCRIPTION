@@ -1,33 +1,27 @@
 Package: ShinyFruit
-Type: Package
-Title: Batch Image Analysis GUI for Small Fruits
-Version: 0.1.1
-Author: Mason Chizk
-Maintainer: Mason Chizk <tmchizk@uark.edu>
-Description: This package uses C++ image processing methods contained in the 
-    magick and imager packages combined with a shiny GUI to simplify image
-    processing and data collection in small fruit crops like blackberry.
-License: MIT + file LICENSE
-Encoding: UTF-8
-LazyData: true
-RoxygenNote: 7.2.3
+Title: An Amazing Shiny App
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "firstname",
+           family = "lastname",
+           role = c("aut", "cre"),
+           email = "your@email.com")
+Description: What the package does (one paragraph).
+License: What license is it under?
 Imports: 
-    assertthat,
     bslib,
-    dplyr,
-    ggplot2,
+    config (>= 0.3.1),
+    golem (>= 0.3.5),
     imager,
     lubridate,
     magick,
     magrittr,
     purrr,
-    shinycssloaders,
+    shiny (>= 1.7.4),
     shinyFiles,
-    shinyWidgets,
     stringr
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
 Depends: 
-    R (>= 4.2)
-Suggests: 
-    knitr,
-    rmarkdown
-VignetteBuilder: knitr
+    R (>= 2.10)
