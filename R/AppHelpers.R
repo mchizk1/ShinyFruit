@@ -24,7 +24,7 @@ RunBatch <- function(indir, include_img=F, col=F,
                      crop=c(0,0,0,0), bkg, mask_col="red",
                      preprocess=T){
   imgs <- list.files(path = indir, full.names = T)
-  outdir <- paste0(indir, "/ShinyFruit_Out")
+  outdir <- file.path(indir, "ShinyFruit_Out")
   if(!dir.exists(outdir)){
     dir.create(outdir)
   }
@@ -101,11 +101,11 @@ RunBatch <- function(indir, include_img=F, col=F,
       if(!is.null(rdr)){
         img_qc <- imager::colorise(img_qc, rdr_px, col = mask_col, alpha = 0.5)
       }
-      imager::save.image(img_qc, paste0(outdir,"/",filename,".jpg"))
+      imager::save.image(img_qc, file.path(outdir, paste0(filename,".jpg")))
     }
     gc()
     shiny::incProgress(1/length(imgs))
   }
   filestamp <- lubridate::stamp("Jan17.1999.3-34-01")
-  write.csv(Out_df, paste0(outdir, "/SF_Out_", filestamp(Sys.time()),".csv"), row.names = F)
+  write.csv(Out_df, file.path(outdir, paste0("SF_Out_", filestamp(Sys.time()),".csv")), row.names = F)
 }

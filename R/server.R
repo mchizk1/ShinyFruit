@@ -372,9 +372,8 @@ server <- function(input, output, session){
 
 
   observeEvent(input$runbutton, {
-    setwd(folderselected())
     bkg <- list(input$col_space_bkg, input$channel1_bkg, input$channel2_bkg, input$channel3_bkg)
-    indir <- getwd()
+    indir <- folderselected()
     drp <- ("Drupelet Count" %in% input$variables)
     ber <- ("Size" %in% input$variables)
     col <- ("Color Profile" %in% input$variables)

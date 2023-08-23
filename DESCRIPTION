@@ -14,11 +14,8 @@ RoxygenNote: 7.2.3
 Imports: 
     assertthat,
     bslib,
-    Cairo,
-    colourpicker,
     dplyr,
     ggplot2,
-    ggpubr,
     imager,
     lubridate,
     magick,
@@ -29,7 +26,7 @@ Imports:
     shinyWidgets,
     stringr
 Depends: 
-    R (>= 2.10)
+    R (>= 4.2)
 Suggests: 
     knitr,
     rmarkdown
