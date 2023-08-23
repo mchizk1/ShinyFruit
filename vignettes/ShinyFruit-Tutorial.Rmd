@@ -22,7 +22,7 @@ library(ShinyFruit)
 ## ShinyFruit Tutorial
 
 ShinyFruit is an R-based application that is currently capable of analyzing images of small fruits (and probably veggies too!). It was 
-created using the shiny package, and is currently capable of measuring fruit size (length, width, and area), color defect proportions,
+created using `shiny` framework, and is currently capable of measuring fruit size (length, width, and area), color defect proportions,
 and detailed color profiles of selected regions. Follow this guide to get started!
 
 Any questions, feedback, or suggestions for new features can be directed to mchizk1@gmail.com
@@ -31,7 +31,7 @@ Any questions, feedback, or suggestions for new features can be directed to mchi
 
 Simply run the following line of code to boot up the ShinyFruit GUI
 
-    ShinyFruit::ShinyFruit()
+    ShinyFruit::run_app()
     
 This should open the user interface shown below
 
@@ -48,7 +48,7 @@ followed when collecting images for ShinyFruit analysis:
 that filters used on image A still apply to images B-Z
 * Test images should be in their own dedicated folder with no other irrelevant files or subfolders.
 * Size analysis assumes that fruit are oriented with the top facing away from the photographer. 
-* Having *at least* half and inch of spacing between fruits should help ensure that the fruit is counted correctly and independently.
+* Having *at least* half an inch of spacing between fruits should help ensure that the fruit is counted correctly and independently.
 * The background should not contain any color that may potentially be found on the fruit itself.
 
 ![After opening a sample image](SFimg.png)
@@ -72,7 +72,7 @@ other settings, will applied to all images in a batch analysis.
 Before conducting the analysis, the user must define the color thresholds that should be used to remove the background from the image.
 This step requires some experimentation, but if images were taken in a consistent way, there should be an effective threshold that can
 be applied to all images in the set. In addition, there is support for multiple color spaces to experiment with.  If RGB thresholds don't
-work well for the image, try Lab or HSB!  Future updates will add even more color spaces for more flexible thresholding options.
+work well for the image, try Lab or HSB!  Future updates may add even more color spaces for more flexible thresholding options.
 
 ![Removing background area](SFbkg.png)
 
