@@ -35,7 +35,7 @@ Simply run the following line of code to boot up the ShinyFruit GUI
     
 This should open the user interface shown below
 
-![The initial user interface](SFopen.png)
+![The initial user interface](SFopen.png){width=75%}
 
 ### Step 2. Load sample image
 
@@ -51,13 +51,13 @@ that filters used on image A still apply to images B-Z
 * Having *at least* half an inch of spacing between fruits should help ensure that the fruit is counted correctly and independently.
 * The background should not contain any color that may potentially be found on the fruit itself.
 
-![After opening a sample image](SFimg.png)
+![After opening a sample image](SFimg.png){width=75%}
 
 ### Step 3. Set size standard (optional but highly recommended)
 
 If a size standard is present in the sample image, click on the relevant switch.  This should open up a couple new options for data entry.
 
-![With a size reference included](SFmeas.png)
+![With a size reference included](SFmeas.png){width=75%}
 
 ### Step 4. Crop out the size standard (only if provided)
 
@@ -65,7 +65,7 @@ If a size standard is provided, there is a good chance that it will interfere wi
 reason, it is recommended to always have the size reference present in the same part of the picture.  The settings for cropping, like all 
 other settings, will applied to all images in a batch analysis.
 
-![Cropped reference](SFcrop.png)
+![Cropped reference](SFcrop.png){width=75%}
 
 ### Step 5. Filter out background area
 
@@ -74,17 +74,17 @@ This step requires some experimentation, but if images were taken in a consisten
 be applied to all images in the set. In addition, there is support for multiple color spaces to experiment with.  If RGB thresholds don't
 work well for the image, try Lab or HSB!  Future updates may add even more color spaces for more flexible thresholding options.
 
-![Removing background area](SFbkg.png)
+![Removing background area](SFbkg.png){width=75%}
 
 ### Step 6. Select traits for analysis!!!
 
 Finally! Here's the fun part...
 
-![Setting options for analysis](SFtrait.png)
+![Setting options for analysis](SFtrait.png){width=75%}
 
 ### Step 7. Run the batch analysis
 
 All current settings will be applied to all images in the selected input directory.  Including images in the output data will slow down the analysis, but will provide the user with a chance to visually check the quality of the analyis against the original images. All the data 
 requested will be included in a single output csv file, with each image representing a row and each column representing a trait.
 
-![Running the batch analysis](SFrun.png)
+![Running the batch analysis](SFrun.png){width=75%}
