@@ -19,6 +19,7 @@ Imports:
     purrr,
     shiny (>= 1.7.4),
     shinyFiles,
+    shinyWidgets,
     stringr
 Encoding: UTF-8
 LazyData: true
