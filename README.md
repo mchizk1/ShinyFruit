@@ -46,3 +46,32 @@ the spots of dirt or juice when it's time for analysis. This process is achieved
 detected islands of pixels.  In the end, only the larger objects will remain. Despeckling becomes optional when using
 the "Color-Based Feature" trait in the analysis stage.
 
+## Output data dictionary
+
+The csv output file produced by ShinyFruit can contain a number of different 
+variable columns, which are described in the table below:
+
+| Variable        | Context                | Description                                         |
+| --------------- | -----------------------| --------------------------------------------------- |
+| File            | General                | The name of the file analyzed                       |
+| Colorspace      | General                | Color space chosen to remove background area        |
+| BkgCh1Threshold | General                | Value set for color channel 1 in background removal |
+| BkgCh2Threshold | General                | Value set for color channel 2 in background removal |
+| BkgCh3Threshold | General                | Value set for color channel 3 in background removal |
+| MeanRGB         | Color profile          | Mean RGB value of the image (after background removal) |
+| RHSDarkColor    | Color profile          | Nearest Royal Horticultural Society color value to the darkest value of the image (after background removal) |
+| RHSMidColor     | Color profile          | Nearest Royal Horticultural Society color value to the median value of the image (after background removal) |
+| RHSLightColor   | Color profile          | Nearest Royal Horticultural Society color value to the lightest value of the image (after background removal) |
+| FtColorSpace    | Color feature analysis | Color space chosen to analyze a colored feature |
+| FtCh1Threshold  | Color feature analysis | Value set for color channel 1 in color feature analysis |
+| FtCh2Threshold  | Color feature analysis | Value set for color channel 2 in color feature analysis |
+| FtCh3Threshold  | Color feature analysis | Value set for color channel 3 in color feature analysis |
+| Feature_prop    | Color feature analysis | Proportion of the the image occupied by the color feature (after background removal) |
+| FeatureRGB      | Color feature analysis | Median RGB value of the extracted color feature |
+| FeatureDarkRHS  | Color feature analysis | Nearest Royal Horticultural Society color value to the darkest value of the color feature |
+| FeatureMidRHS   | Color feature analysis | Nearest Royal Horticultural Society color value to the median value of the color feature |
+| FeatureLightRHS | Color feature analysis | Nearest Royal Horticultural Society color value to the lightest value of the color feature |
+| BerryCount      | Size analysis          | Number of fruit detected after removing background area |
+| Length          | Size analysis          | Mean length of fruit detected |
+| Width           | Size analysis          | Mean width of fruit detected |
+| Size            | Size analysis          | Mean area of fruit detected |
