@@ -75,3 +75,5 @@ variable columns, which are described in the table below:
 | Length          | Size analysis          | Mean length of fruit detected |
 | Width           | Size analysis          | Mean width of fruit detected |
 | Size            | Size analysis          | Mean area of fruit detected |
+
+**To print this table in R** simpley run the function `show_variables()`
