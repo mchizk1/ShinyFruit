@@ -109,3 +109,12 @@ RunBatch <- function(indir, include_img=F, col=F,
   filestamp <- lubridate::stamp("Jan17.1999.3-34-01")
   write.csv(Out_df, file.path(outdir, paste0("SF_Out_", filestamp(Sys.time()),".csv")), row.names = F)
 }
+
+#' Retrieve variable descriptions
+#' 
+#' Calls the internal dataset that contains descriptions for every possible output variable
+#' 
+#' @export
+show_variables <- function(){
+  print(variable_desc)
+}

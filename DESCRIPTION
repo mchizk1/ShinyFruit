@@ -1,13 +1,13 @@
 Package: ShinyFruit
-Title: An Amazing Shiny App
+Title: A Shiny app for analyzing images of fruits and vegetables
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "firstname",
-           family = "lastname",
+    person(given = "Mason",
+           family = "Chizk",
            role = c("aut", "cre"),
-           email = "your@email.com")
-Description: What the package does (one paragraph).
-License: What license is it under?
+           email = "mchizk@abacusbio.com")
+Description: This package allows the user to run a Shiny app locally.  This app is capable of loading in jpg formatted images and analyzing size, shape, counts, and color attributes of fruits and vegetables.
+License: MIT
 Imports: 
     bslib,
     config (>= 0.3.1),

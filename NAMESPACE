@@ -2,6 +2,7 @@
 
 export("%>%")
 export(run_app)
+export(show_variables)
 import(shiny)
 import(shinyFiles)
 importFrom(golem,activate_js)
