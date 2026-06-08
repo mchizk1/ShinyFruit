@@ -25,7 +25,7 @@ ShinyFruit is an R-based application that is currently capable of analyzing imag
 created using `shiny` framework, and is currently capable of measuring fruit size (length, width, and area), color defect proportions,
 and detailed color profiles of selected regions. Follow this guide to get started!
 
-Any questions, feedback, or suggestions for new features can be directed to mchizk1@gmail.com
+Any questions, feedback, or suggestions for new features can be directed to mchizk@abacusbio.com
 
 ### Step 1. Running ShinyFruit locally
 
@@ -42,7 +42,7 @@ This should open the user interface shown below
 Interacting with the browser button should open the file search dialog. There are a few general rules that should be 
 followed when collecting images for ShinyFruit analysis:
 
-* jpg is currently the only supported format. I will probably add support for others like png in the future.
+* JPEG and PNG are supported image formats.
 * inclusion of a known size standard is highly recommended (allows useful size analysis)
 * If multiple pictures are taken, lighting conditions and camera height should be kept as consistent as possible, such
 that filters used on image A still apply to images B-Z

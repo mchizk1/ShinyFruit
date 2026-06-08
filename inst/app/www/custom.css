@@ -1,0 +1,64 @@
+/* ShinyFruit custom styles */
+.sf-title {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.sf-subtitle {
+  color: #adb5bd;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.sf-step-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #b8a9e8;
+  margin-bottom: 0.35rem;
+}
+
+.sf-results-card pre {
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+  color: #dee2e6;
+}
+
+.sf-sidebar .accordion-button {
+  font-weight: 600;
+}
+
+.sf-sidebar .form-group {
+  margin-bottom: 0.75rem;
+}
+
+.sf-sidebar .irs {
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.sf-plot-card {
+  min-height: 480px;
+}
+
+.sf-hint {
+  color: #868e96;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.sf-action-row {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sf-action-row .btn-primary {
+  flex: 1;
+}

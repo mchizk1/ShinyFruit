@@ -22,15 +22,23 @@ pythag <- function(click1, click2){
 RunBatch <- function(indir, include_img=F, col=F,
                      drp=F, ber=F, rdr=NULL, convert=1,
                      crop=c(0,0,0,0), bkg, mask_col="red",
-                     preprocess=T){
-  imgs <- list.files(path = indir, full.names = T)
+                     preprocess=T, drp_settings=NULL){
+  imgs <- list.files(
+    path = indir,
+    pattern = "\\.(jpe?g|png|JPE?G|PNG)$",
+    full.names = TRUE,
+    ignore.case = TRUE
+  )
+  if (length(imgs) == 0) {
+    stop("No JPEG or PNG files found in the selected folder.")
+  }
   outdir <- file.path(indir, "ShinyFruit_Out")
   if(!dir.exists(outdir)){
     dir.create(outdir)
   }
   Out_df <- c()
   for(i in imgs){
-    Out_vec <- data.frame(File = stringr::str_extract(i, "(?<=/)([^/]*)$"),
+    Out_vec <- data.frame(File = basename(i),
                           ColorSpace = bkg[[1]],
                           BkgCh1Threshold= paste0("(",bkg[[2]][1],":", bkg[[2]][2],")"),
                           BkgCh2Threshold= paste0("(",bkg[[3]][1],":", bkg[[3]][2],")"),
@@ -55,13 +63,19 @@ RunBatch <- function(indir, include_img=F, col=F,
                             RHSLightColor = col_lst$light_color)
       Out_vec <- cbind(Out_vec, col_out)
     }
+    drp_seg <- NULL
     if(drp){
-      drp_df <- DrpSummary(img_out)
-      drp_num <- nrow(drp_df)
-      if(ber == F){
-        ber_num <- BerSummary(img_out, stats=F)
-      }
-      drp_out <- data.frame(DrupeletsPerBerry = round((drp_num/nrow(ber_df)), digits = 2))
+      drp_cfg <- if (is.null(drp_settings)) DRUPELET_DEFAULTS else drp_settings
+      drp_seg <- DrpSegment(
+        img_out,
+        min_size = drp_cfg$min_size,
+        blur_sigma = drp_cfg$blur_sigma,
+        sensitivity = drp_cfg$sensitivity
+      )
+      drp_df <- drp_seg$drupelets
+      drp_out <- data.frame(
+        DrupeletsPerBerry = round(DrpMeanPerBerry(drp_df), digits = 2)
+      )
       Out_vec <- cbind(Out_vec, drp_out)
     }
     if(!is.null(rdr)){
@@ -93,10 +107,13 @@ RunBatch <- function(indir, include_img=F, col=F,
     }
     Out_df <- rbind(Out_df, Out_vec)
     if(include_img){
-      filename <- stringr::str_extract(Out_vec[1], ".*(?=\\.([:alpha:]*)$)")
+      filename <- tools::file_path_sans_ext(Out_vec$File[1])
       img_qc <- imager::colorise(img_out, imager::as.pixset(is.na(img_out)), "white")
-      if(drp){
-        img_qc <- imager::colorise(img_qc, DrpPlot(img_out, drp_df), "green")
+      if(drp && !is.null(drp_seg)){
+        drp_px <- DrpRegionMask(drp_seg$label_im, drp_seg$label_ids)
+        if (!is.null(drp_px)) {
+          img_qc <- imager::colorise(img_qc, drp_px, col = "green", alpha = 0.5)
+        }
       }
       if(!is.null(rdr)){
         img_qc <- imager::colorise(img_qc, rdr_px, col = mask_col, alpha = 0.5)
@@ -104,7 +121,7 @@ RunBatch <- function(indir, include_img=F, col=F,
       imager::save.image(img_qc, file.path(outdir, paste0(filename,".jpg")))
     }
     gc()
-    shiny::incProgress(1/length(imgs))
+    tryCatch(shiny::incProgress(1 / length(imgs)), error = function(e) invisible(NULL))
   }
   filestamp <- lubridate::stamp("Jan17.1999.3-34-01")
   write.csv(Out_df, file.path(outdir, paste0("SF_Out_", filestamp(Sys.time()),".csv")), row.names = F)

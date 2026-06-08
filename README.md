@@ -21,6 +21,26 @@ to improve this tool!
 
     install.packages("devtools")
     devtools::install_github("mchizk1/ShinyFruit", build_vignettes = T)
+
+### Development setup (renv)
+
+This project uses [renv](https://rstudio.github.io/renv/) for reproducible dependencies.
+After cloning the repo, open the project in RStudio (or run R from the project root) and run:
+
+    renv::hydrate()   # copy packages from your user library (fastest on Windows)
+    # or
+    renv::restore()   # install from renv.lock (may require Rtools for source builds)
+
+Then build/install the package from RStudio or:
+
+    R CMD INSTALL .
+
+If you see a `vctrs` / `purrr` version conflict in renv, restart R and run:
+
+    renv::update("vctrs")
+    renv::snapshot(prompt = FALSE)
+
+ShinyFruit no longer depends on `purrr` directly, which avoids the `map_dfr()` / dplyr prompt during analysis.
     
 ## Check out the vignette for a full tutorial
 
@@ -75,5 +95,6 @@ variable columns, which are described in the table below:
 | Length          | Size analysis          | Mean length of fruit detected |
 | Width           | Size analysis          | Mean width of fruit detected |
 | Size            | Size analysis          | Mean area of fruit detected |
+| DrupeletsPerBerry | Drupelet analysis    | Mean number of drupelets per berry |
 
-**To print this table in R** simpley run the function `show_variables()`
+**To print this table in R** simply run the function `show_variables()`
